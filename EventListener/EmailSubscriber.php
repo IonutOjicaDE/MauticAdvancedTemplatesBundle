@@ -11,6 +11,7 @@ use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticAdvancedTemplatesBundle\Helper\TemplateProcessor;
 use Psr\Log\LoggerInterface;
 use Monolog\Logger;
+use Mautic\CoreBundle\Helper\EmojiHelper;
 
 /**
  * Class EmailSubscriber.
@@ -117,13 +118,16 @@ class EmailSubscriber implements EventSubscriberInterface
         }
 
         $subject = $this->templateProcessor->processTemplate($props['subject'],  $lead);
+        $subject = EmojiHelper::toEmoji($subject, 'short');
         $event->setSubject($subject);
 
         $content = $this->templateProcessor->processTemplate($props['content'],  $lead, $props['tokens']);
         $content = $this->templateProcessor->addTrackingPixel($content);
+        $content = EmojiHelper::toEmoji($content, 'short');
         $event->setContent($content);
 
         if ( empty( trim($event->getPlainText()) ) ) {
+            
             $event->setPlainText( (new PlainTextHelper($content))->getText() );
         }
     }
