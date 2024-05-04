@@ -12,8 +12,8 @@ Another example: you might want to include dynamic content to your email. Let's 
 
 This plugin was tested with:
 
-* Mautic v4.4.0
-* PHP v8.0
+* Mautic v4.4.11
+* PHP v8.0 , PHP v7.4
 
 There is a high probability it is compatible with other 5.x versions but it is untested. Will not work with versions lower than 4.x.
 
@@ -32,7 +32,7 @@ There is a high probability it is compatible with other 5.x versions but it is u
 * RSS support
 * RSS items related to contact's segment preferences center and RSS category
 * json_encode, json_decode twig implementations
-* 
+* EMOJI possible in subject and content (added in this fork)
 
 ## Installation
 
