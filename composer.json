@@ -1,6 +1,16 @@
 {
   "name": "logicify/mautic-advanced-templates-bundle",
   "type": "mautic-plugin",
+  "authors": [
+        {
+            "name": "Lucas Costa",
+            "email": "lucascostacruzsilva@gmail.com"
+        },
+        {
+            "name": "Ionut Ojica",
+            "email": "contact@ionutojica.com"
+        }
+    ],
   "require": {
     "mautic/composer-plugin": "^1.0"
   }
