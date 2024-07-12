@@ -203,11 +203,11 @@ Thanks go to Sebastian to make it public in the [forum](https://forum.mautic.org
 
 ```twig
         {% TWIG_BLOCK %}
-            Your name is {{ contact.firstname }}
+            Your name is {{ lead.firstname }}
         {% END_TWIG_BLOCK %}
 ```
 
-Access the contact fields by using the "contact" instead of "lead" alias.
+Access the contact fields by using the "lead" alias.
 
 ### Example 9: Rendering structured data from tokens
 
