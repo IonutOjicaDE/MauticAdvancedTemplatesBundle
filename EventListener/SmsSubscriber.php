@@ -1,31 +1,34 @@
 <?php
 
 namespace MauticPlugin\MauticAdvancedTemplatesBundle\EventListener;
+
 use Mautic\CampaignBundle\Entity\Lead;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Mautic\SmsBundle\SmsEvents;
 use Mautic\SmsBundle\Event as Events;
 use Mautic\EmailBundle\Helper\PlainTextHelper;
 use Mautic\CoreBundle\Exception as MauticException;
+use Mautic\CoreBundle\Helper\EmojiHelper;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticAdvancedTemplatesBundle\Helper\TemplateProcessor;
 use Psr\Log\LoggerInterface;
 use Monolog\Logger;
+use MauticPlugin\MauticAdvancedTemplatesBundle\Helper\TemplateProcessor;
+use MauticPlugin\MauticAdvancedTemplatesBundle\Helper\FormSubmission;
 
 /**
- * Class EmailSubscriber.
+ * Class SmsSubscriber.
  */
 class SmsSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var LeadModel
-     */
-    private $leadModel;
-
-    /**
-     * @var TokenHelper $tokenHelper ;
+     * @var TemplateProcessor $templateProcessor ;
      */
     protected $templateProcessor;
+
+    /**
+     * @var LeadModel $leadModel ;
+     */
+    protected $leadModel;
 
     /**
      * @var LoggerInterface $logger ;
@@ -33,15 +36,24 @@ class SmsSubscriber implements EventSubscriberInterface
     protected $logger;
 
     /**
+     * @var FormSubmission $formSubmissionHelper ;
+     */
+    protected $formSubmissionHelper;
+
+    /**
      * EmailSubscriber constructor.
      *
-     * @param TokenHelper $tokenHelper
+     * @param TemplateProcessor $templateProcessor
+     * @param LeadModel $leadModel
+     * @param Logger $logger
+     * @param FormSubmission $formSubmissionHelper
      */
-    public function __construct(TemplateProcessor $templateProcessor, LeadModel $leadModel, Logger $logger)
+    public function __construct(TemplateProcessor $templateProcessor, LeadModel $leadModel, Logger $logger, FormSubmission $formSubmissionHelper)
     {
         $this->templateProcessor = $templateProcessor;
         $this->leadModel = $leadModel;
         $this->logger = $logger;
+        $this->formSubmissionHelper = $formSubmissionHelper;
     }
     /**
      * @return array
@@ -50,10 +62,20 @@ class SmsSubscriber implements EventSubscriberInterface
     {
         return [
             SmsEvents::SMS_ON_SEND => ['onSmsGenerate', 300],
-            // I dont know how to do this without editing core. 
-            // since there does not seem to be a simular way to call it yet.            
+            // I dont know how to do this without editing core.
+            // since there does not seem to be a similar way to call it yet.
             // SmsEvents::SMS_ON_DISPLAY => ['onSmsGenerate', 0],
         ];
+    }
+
+    /**
+     * Try to retrieve the current form values of the active lead 
+     * 
+     * @param integer $leadId
+     */
+    private function getFormData($leadId)
+    {
+        return $this->formSubmissionHelper->getFormData($leadId);
     }
 
     /**
@@ -69,7 +91,8 @@ class SmsSubscriber implements EventSubscriberInterface
         $this->logger->info('onSmsGenerate MauticAdvancedTemplatesBundle\SmsSubscriber');
 
         $content = $event->getContent();
-        
+
+        $formData = []; 
         $lead = $event->getLead();
         $leadmodel = $this->leadModel->getEntity($lead['id']);
         $lead['tags'] = [];
@@ -77,9 +100,13 @@ class SmsSubscriber implements EventSubscriberInterface
             foreach ($leadmodel->getTags() as $tag) {
                 $lead['tags'][] = $tag->getTag();
             }
-        } 
+        }
+        if(is_array($lead)){
+            $formData = $this->getFormData($lead['id']);
+        }
 
-        $content = $this->templateProcessor->processTemplate($content, $lead);
+        $content = $this->templateProcessor->processTemplate($content, $lead, $formData);
+        $content = EmojiHelper::toEmoji($content, 'short');
         $event->setContent($content);
     }
 } 
