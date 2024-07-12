@@ -104,7 +104,6 @@ class PageSubscriber implements EventSubscriberInterface
         {
             $leadCredentials = $lead->getProfileFields();
             $formData = $this->getFormData($leadCredentials['id']);
-/* I do not know what for are these lines. The custom fields are working also without them.
             $leadmodel = $this->leadModel->getEntity($leadCredentials['id']);
             $leadCredentials['tags'] = [];
             if ($leadmodel && count($leadmodel->getTags()) > 0) {
@@ -112,7 +111,6 @@ class PageSubscriber implements EventSubscriberInterface
                     $leadCredentials['tags'][] = $tag->getTag();
                 }
             }
-*/
         }
 
         $content = $this->templateProcessor->processTemplate($content, $leadCredentials, $formData);
