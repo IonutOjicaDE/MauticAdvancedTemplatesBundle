@@ -14,7 +14,9 @@ namespace MauticPlugin\MauticAdvancedTemplatesBundle\EventListener;
 use Mautic\PageBundle\Event\PageDisplayEvent;
 use Mautic\PageBundle\PageEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Mautic\CoreBundle\Exception as MauticException;
 use Mautic\LeadBundle\Tracker\ContactTracker;
+use Mautic\LeadBundle\Model\LeadModel;
 use Psr\Log\LoggerInterface;
 use Monolog\Logger;
 use MauticPlugin\MauticAdvancedTemplatesBundle\Helper\TemplateProcessor;
@@ -26,6 +28,11 @@ class PageSubscriber implements EventSubscriberInterface
      * @var TemplateProcessor $templateProcessor ;
      */
     protected $templateProcessor;
+
+    /**
+     * @var LeadModel $leadModel ;
+     */
+    protected $leadModel;
 
     /**
      * @var Logger
@@ -46,12 +53,16 @@ class PageSubscriber implements EventSubscriberInterface
      * EmailSubscriber constructor.
      *
      * @param TemplateProcessor $templateProcessor
+     * @param LeadModel $leadModel
      * @param Logger $logger
+     * @param FormSubmission $formSubmissionHelper
+     * @param ContactTracker $contactTracker
      */
-    public function __construct(TemplateProcessor $templateProcessor, Logger $logger, FormSubmission $formSubmissionHelper, ContactTracker $contactTracker)
+    public function __construct(TemplateProcessor $templateProcessor, LeadModel $leadModel, Logger $logger, FormSubmission $formSubmissionHelper, ContactTracker $contactTracker)
     {
-        $this->templateProcessor = $templateProcessor;
-        $this->logger = $logger;
+        $this->templateProcessor    = $templateProcessor;
+        $this->leadModel            = $leadModel;
+        $this->logger               = $logger;
         $this->formSubmissionHelper = $formSubmissionHelper;
         $this->contactTracker       = $contactTracker;
     }    
@@ -93,9 +104,18 @@ class PageSubscriber implements EventSubscriberInterface
         {
             $leadCredentials = $lead->getProfileFields();
             $formData = $this->getFormData($leadCredentials['id']);
+/* I do not know what for are these lines. The custom fields are working also without them.
+            $leadmodel = $this->leadModel->getEntity($leadCredentials['id']);
+            $leadCredentials['tags'] = [];
+            if ($leadmodel && count($leadmodel->getTags()) > 0) {
+                foreach ($leadmodel->getTags() as $tag) {
+                    $leadCredentials['tags'][] = $tag->getTag();
+                }
+            }
+*/
         }
 
-        $content = $this->templateProcessor->processTemplate($content, $lead, $formData);
+        $content = $this->templateProcessor->processTemplate($content, $leadCredentials, $formData);
 
         $event->setContent($content);
     }
