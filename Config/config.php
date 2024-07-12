@@ -30,6 +30,7 @@ return [
                 'class'     => \MauticPlugin\MauticAdvancedTemplatesBundle\EventListener\PageSubscriber::class,
                 'arguments' => [
                     'mautic.plugin.advanced_templates.helper.template_processor',
+                    'mautic.lead.model.lead',
                     'monolog.logger.mautic',
                     'mautic.plugin.advanced_templates.helper.form_submission',
                     'mautic.tracker.contact'
