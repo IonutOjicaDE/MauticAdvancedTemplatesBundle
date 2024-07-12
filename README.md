@@ -15,7 +15,7 @@ This plugin was tested with:
 * Mautic v4.4.11
 * PHP v8.0 , PHP v7.4
 
-There is a high probability it is compatible with other 5.x versions but it is untested. Will not work with versions lower than 4.x.
+There is a high probability it is compatible with 5.x versions but it is untested. Will not work with versions lower than 4.x.
 
 * Mautic 4.x - [Release 1.2](https://github.com/Logicify/mautic-advanced-templates-bundle/releases/tag/1.2)
 
@@ -59,6 +59,8 @@ The table below explains which variables are exposed to the context. Also it con
 | Entity      | Type     | Description                              | Example                                  |
 | ----------- | -------- | ---------------------------------------- | ---------------------------------------- |
 | lead        | Variable | Holds a Lead entity (contact). You should refer fields by alias name (see example). | `{{lead.firstname}}`, `{{lead.country}}` |
+| contact     | Variable | Holds a Lead entity (contact). You should refer fields by alias name (see example) in landing pages. | `{{contact.firstname}}`, `{{contact.country}}` |
+| form        | Variable | Holds a Form entity. You should refer fields by alias name (see example).           | `{{form.12.email}}`, `{{form.12.firstname}}` |
 | json_decode | Filter   | Converts string in JSON format into object. | `{% set cart = lead.cart | json_decode %}` In this sample we declare variable `cart` which will hold deserialized cart. |
 
 
@@ -150,8 +152,7 @@ Let's continue with the previous example but turn template for rendering a singl
           </ul>             
       {% END_TWIG_BLOCK %}
 ```
-        
-    
+
  ### Example 5: RSS related items to contact's segments
 
 - Add one or more categories to item 
@@ -183,11 +184,32 @@ https://www.w3schools.com/xml/rss_tag_category_item.asp
                 {% for item in tags %}
                 <li>{{item}}</li>
                 {% endfor %}
-            </ul>                                           
+            </ul>
         {% END_TWIG_BLOCK %}
 ```
 
-### Example 7: Rendering structured data from tokens
+### Example 7: Using `form`
+
+```twig
+        {% TWIG_BLOCK %}
+            {{ form.12.email }}
+        {% END_TWIG_BLOCK %}
+```
+
+would echo the email field of the last form submit from form 12 of the lead.
+Thanks go to Sebastian to make it public in the [forum](https://forum.mautic.org/t/mautic-twig-advanced-templates-bundle/26571/13).
+
+### Example 8: In landing pages
+
+```twig
+        {% TWIG_BLOCK %}
+            Your name is {{ contact.firstname }}
+        {% END_TWIG_BLOCK %}
+```
+
+Access the contact fields by using the "contact" instead of "lead" alias.
+
+### Example 9: Rendering structured data from tokens
 
 Instead of pushing data to a custom field, you can specify dynamic data when using the Email Send API. When making the API call, set your POST body to a JSON object including a `tokens` key like below:
 
@@ -217,6 +239,8 @@ To render, code something like this:
  - Dmitry Berezovsky, Logicify ([http://logicify.com/](https://logicify.com/?utm_source=github&utm_campaign=mautic-templates&utm_medium=opensource))
  - Luis Rodriguez, ldrrp/MarketSmart ([https://github.com/ldrrp](https://github.com/ldrrp)) - [Contact me on slack](https://www.mautic.org/slack)
 
+ - Sebastian Fahrenkrog, [Content Optimizer GmbH](https://www.content-optimizer.de/), [https://github.com/content-optimizer-gmbh/](https://github.com/content-optimizer-gmbh/mautic-advanced-templates-bundle)
+
 ## Contributors
 
 Thanks goes to these wonderful people
@@ -225,7 +249,8 @@ Thanks goes to these wonderful people
  - [Ben U, bobsburgers](https://github.com/bobsburgers) - SMS implementation
  - [Felipe J. L. Rita, zerodois](https://github.com/zerodois) - Mautic 4.x compatibility
  - [Nick Pappas, radicand](https://github.com/radicand) - Arbritrary Send Mail API tokens
-
+ - [Sebastian Fahrenkrog, content-optimizer-gmbh](https://github.com/content-optimizer-gmbh/mautic-advanced-templates-bundle) - Form fields as tokens, integration in pages and dynamic content
+ - [Pablo Veintimilla, pabloveintimilla](https://github.com/pabloveintimilla) - Mautic 5 support
 
 ## Disclaimer
 
