@@ -9,6 +9,7 @@ use Twig\Environment as Twig_Environment;
 use Twig\Loader\ChainLoader as Twig_Loader_Chain;
 use Twig\Loader\ArrayLoader as Twig_Loader_Array;
 use Twig\TwigFilter as Twig_SimpleFilter;
+use Twig\Error\Error as TwigError;
 
 class TemplateProcessor
 {
@@ -60,13 +61,13 @@ class TemplateProcessor
      * @return string
      * @throws \Throwable
      */
-    public function processTemplate($content, $lead, $tokens = null)
+    public function processTemplate($content, $lead, $form, $tokens = null)
     {
         $this->logger->debug('TemplateProcessor: Processing template');
         // This was causing huge memory usage. Uncomment to debug.
         // $this->logger->debug('LEAD: ' . var_export($lead, true));
         $content = preg_replace_callback_array([
-            TemplateProcessor::$matchTwigBlockRegex => $this->processTwigBlock($lead, $tokens)
+            TemplateProcessor::$matchTwigBlockRegex => $this->processTwigBlock($lead, $form, $tokens)
         ], $content);
         $this->logger->debug('TemplateProcessor: Template processed');
         return $content;
@@ -90,18 +91,30 @@ class TemplateProcessor
         }));
     }
 
-    private function processTwigBlock($lead, $tokens = null)
+    private function processTwigBlock($lead, $form, $tokens = null)
     {
         $this->lead = $lead;
-        return function ($matches) use ($lead, $tokens) {
+        return function ($matches) use ($lead, $form, $tokens) {
             $templateSource = $matches[1];
             // Uncomment to debug. This causes high memory usage with var_export.
             // $this->logger->debug('BLOCK SOURCE: ' . var_export($templateSource, true));
-            $template = $this->twigEnv->createTemplate($templateSource);
-            $renderedTemplate = $template->render([
-                'lead' => $lead,
-                'tokens' => $tokens
-            ]);
+            try{
+                $template = $this->twigEnv->createTemplate($templateSource);
+            }catch(\Exception $error){
+                $this->logger->error("Invalid syntax: ".$error->getMessage());
+                return '';
+            }
+
+            try{
+                $renderedTemplate = $template->render([
+                    'lead' => $lead,
+                    'form' => $form,
+                    'tokens' => $tokens
+                ]);
+            }catch(\Exception $error){
+                $this->logger->error("Error render template: ".$error->getMessage());
+                return '';
+            }      
             // Uncomment to debug. This causes high memory usage with var_export.
             // $this->logger->debug('RENDERED BLOCK: ' . var_export($renderedTemplate, true));
             return $renderedTemplate;
