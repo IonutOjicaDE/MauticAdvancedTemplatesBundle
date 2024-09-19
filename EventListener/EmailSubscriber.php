@@ -50,9 +50,9 @@ class EmailSubscriber implements EventSubscriberInterface
      */
     public function __construct(TemplateProcessor $templateProcessor, LeadModel $leadModel, Logger $logger, FormSubmission $formSubmissionHelper)
     {
-        $this->templateProcessor = $templateProcessor;
-        $this->leadModel = $leadModel;
-        $this->logger = $logger;
+        $this->templateProcessor    = $templateProcessor;
+        $this->leadModel            = $leadModel;
+        $this->logger               = $logger;
         $this->formSubmissionHelper = $formSubmissionHelper;
     }
     /**
